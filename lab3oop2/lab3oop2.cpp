@@ -1,58 +1,64 @@
 ﻿#include <opencv2/opencv.hpp>
 #include <iostream>
 #include <filesystem>
+#include <stdexcept>
 
-int main() 
+int main()
 {
-    try 
+    try
     {
         std::wstring directoryPath = L"C:/Users/roma1/source/repos/lab3oop/lab3oop2/мамка";
-        if (!std::filesystem::exists(directoryPath)) {
-            std::cerr << "Error: Directory does not exist!" << std::endl;
-            return -1;
-        }
-        for (const auto& entry : std::filesystem::directory_iterator(directoryPath)) 
+        if (!std::filesystem::exists(directoryPath))
         {
-            if (entry.is_regular_file()) 
+            throw std::invalid_argument("The specified directory does not exist.");
+        }
+        for (const auto& entry : std::filesystem::directory_iterator(directoryPath))
+        {
+            if (!entry.is_regular_file())
             {
-                std::string fileName = entry.path().string();
-                std::string extension = entry.path().extension().string();
-                if (extension == ".jpg" || extension == ".jpeg" || extension == ".png" || extension == ".bmp" || extension == ".tiff") 
-                {
-                    cv::Mat img = cv::imread(fileName);
-                    if (img.empty()) 
-                    {
-                        std::cerr << "Error: Could not load image " << fileName << std::endl;
-                        continue;
-                    }
-                    cv::Mat mirroredImg;
-                    cv::flip(img, mirroredImg, 1);
-                    std::string newFileName = entry.path().stem().string() + "-mirrored.png";
-                    std::string savePath = (entry.path().parent_path() / newFileName).string();
-                    if (cv::imwrite(savePath, mirroredImg)) 
-                    {
-                        std::cout << "Saved mirrored image as " << savePath << std::endl;
-                    }
-                    else 
-                    {
-                        std::cerr << "Error: Could not save image " << savePath << std::endl;
-                    }
-                }
+                throw std::runtime_error("Not a regular file: " + entry.path().string());
             }
+            std::string fileName = entry.path().string();
+            std::string extension = entry.path().extension().string();
+            if (extension != ".jpg" && extension != ".jpeg" && extension != ".png" && extension != ".bmp" && extension != ".tiff")
+            {
+                throw std::invalid_argument("Unsupported file type: " + extension);
+            }
+            cv::Mat img = cv::imread(fileName);
+            if (img.empty())
+            {
+                throw std::runtime_error("Could not load image: " + fileName);
+            }
+            cv::Mat mirroredImg;
+            cv::flip(img, mirroredImg, 1);
+            std::string newFileName = entry.path().stem().string() + "-mirrored.png";
+            std::string savePath = (entry.path().parent_path() / newFileName).string();
+            if (!cv::imwrite(savePath, mirroredImg))
+            {
+                throw std::runtime_error("Could not save image: " + savePath);
+            }
+            std::cout << "Saved mirrored image as " << savePath << std::endl;
         }
     }
-    catch (const std::filesystem::filesystem_error& e) 
+    catch (const std::invalid_argument& e)
     {
-        std::cerr << "Filesystem error: " << e.what() << std::endl;
+        std::cerr << "Invalid Argument Error: " << e.what() << std::endl;
     }
-    catch (const std::exception& e) 
+    catch (const std::runtime_error& e)
     {
-        std::cerr << "Standard exception: " << e.what() << std::endl;
+        std::cerr << "Runtime Error: " << e.what() << std::endl;
     }
-    catch (...) 
+    catch (const std::filesystem::filesystem_error& e)
     {
-        std::cerr << "Unknown error occurred!" << std::endl;
+        std::cerr << "Filesystem Error: " << e.what() << std::endl;
     }
-
+    catch (const std::exception& e)
+    {
+        std::cerr << "Standard Exception: " << e.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::cerr << "An unknown error occurred!" << std::endl;
+    }
     return 0;
 }

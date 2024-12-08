@@ -1,4 +1,5 @@
 ﻿  lab3oop2.cpp
+C:\Users\roma1\source\repos\lab3oop\lab3oop2\lab3oop2.cpp(51,5): warning C4286: const std::filesystem::filesystem_error &: перехвачено базовым классом ("const std::runtime_error &") в строке 47
   lab3oop2.vcxproj -> C:\Users\roma1\source\repos\lab3oop\x64\Debug\lab3oop2.exe
   "pwsh.exe" не является внутренней или внешней
   командой, исполняемой программой или пакетным файлом.
